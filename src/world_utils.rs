@@ -232,6 +232,8 @@ pub fn build_bedrock_output(
 /// (with updated name, timestamp, and spawn position), and icon.png.
 ///
 /// Returns the full path to the newly created world directory.
+// The CLI now goes through `create_new_world_with_name`; the tests still use this.
+#[cfg_attr(not(test), allow(dead_code))]
 pub fn create_new_world(base_path: &Path) -> Result<String, String> {
     create_new_world_with_name(base_path, None)
 }

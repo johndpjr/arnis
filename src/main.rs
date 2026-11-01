@@ -447,13 +447,14 @@ fn run_cli() {
     } else {
         // Java: create a new world in the provided output directory
         let base_dir = args.path.clone().unwrap();
-        let world_path = match world_utils::create_new_world(&base_dir) {
-            Ok(path) => PathBuf::from(path),
-            Err(e) => {
-                eprintln!("{} {}", "Error:".red().bold(), e);
-                std::process::exit(1);
-            }
-        };
+        let world_path =
+            match world_utils::create_new_world_with_name(&base_dir, args.world_name.as_deref()) {
+                Ok(path) => PathBuf::from(path),
+                Err(e) => {
+                    eprintln!("{} {}", "Error:".red().bold(), e);
+                    std::process::exit(1);
+                }
+            };
         println!(
             "Created new world at: {}",
             world_path.display().to_string().bright_white().bold()

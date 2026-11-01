@@ -71,7 +71,10 @@ pub struct Args {
     #[arg(long, default_value_t = false)]
     pub one_world: bool,
 
-    /// Name of the world folder for --one-world (default "Arnis One World").
+    /// Name of the new world: its folder and the name shown in Minecraft's world list.
+    /// Java only. Without --one-world the default is "Arnis World N"; a name already
+    /// taken in --output-dir gets " (2)", " (3)", ... appended. With --one-world it
+    /// names the persistent world (default "Arnis One World").
     #[arg(long)]
     pub world_name: Option<String>,
 
@@ -962,8 +965,9 @@ pub fn validate_args(args: &Args) -> Result<(), String> {
         if args.mapillary_probe {
             return Err("--one-world and --mapillary-probe do not combine.".to_string());
         }
-    } else if args.world_name.is_some() {
-        return Err("--world-name only applies to --one-world.".to_string());
+    } else if args.world_name.is_some() && (args.bedrock || args.luanti) {
+        // Bedrock and Luanti name their worlds elsewhere, so a name would be dropped.
+        return Err("--world-name is available for Java Edition worlds only.".to_string());
     }
     if args.projection == crate::projection::ProjectionKind::WebMercator && !args.one_world {
         println!(
@@ -1405,7 +1409,23 @@ mod tests {
         assert!(validate_args(&parse(&["--one-world", "--luanti"])).is_err());
         assert!(validate_args(&parse(&["--one-world", "--rotation", "15"])).is_err());
         assert!(validate_args(&parse(&["--one-world", "--body", "moon"])).is_err());
-        assert!(validate_args(&parse(&["--world-name", "Home"])).is_err());
+    }
+
+    #[test]
+    fn world_name_names_any_java_world_but_not_bedrock_or_luanti() {
+        let tmpdir = tempfile::tempdir().unwrap();
+        let tmp_path = tmpdir.path().to_str().unwrap();
+        let parse = |extra: &[&str]| {
+            let mut cmd = vec!["arnis", "--output-dir", tmp_path, "--bbox", "1,2,3,4"];
+            cmd.extend_from_slice(extra);
+            Args::parse_from(cmd.iter())
+        };
+
+        assert!(validate_args(&parse(&["--world-name", "Home"])).is_ok());
+        let bedrock = validate_args(&parse(&["--world-name", "Home", "--bedrock"])).unwrap_err();
+        assert!(bedrock.contains("--world-name"), "{bedrock}");
+        let luanti = validate_args(&parse(&["--world-name", "Home", "--luanti"])).unwrap_err();
+        assert!(luanti.contains("--world-name"), "{luanti}");
     }
 
     #[test]
