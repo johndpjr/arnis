@@ -19,6 +19,13 @@ pub struct Args {
     #[arg(long, group = "location")]
     pub file: Option<String>,
 
+    /// Land cover from a painted map instead of ESA WorldCover: an 8-bit greyscale PNG, one
+    /// pixel per world block, each value an ESA WorldCover class (10 tree cover, 30 grassland,
+    /// 60 bare, 70 snow/ice, 80 water, 90 wetland, ...; 0 = none). Used exactly as painted,
+    /// with no download. For invented worlds (mineworld).
+    #[arg(long, value_name = "PNG")]
+    pub landcover: Option<PathBuf>,
+
     /// Save the OSM data this run uses to a file (Overpass JSON), to generate from it again
     /// later with --file
     #[arg(long, group = "location")]
@@ -901,6 +908,15 @@ pub fn validate_args(args: &Args) -> Result<(), String> {
 
     if args.bedrock && args.luanti {
         return Err("Cannot use --bedrock and --luanti together.".to_string());
+    }
+
+    if let Some(path) = &args.landcover {
+        if !path.is_file() {
+            return Err(format!("--landcover: {} is not a file.", path.display()));
+        }
+        if !args.body.is_earth() {
+            return Err("--landcover only applies to Earth.".to_string());
+        }
     }
 
     // The legacy --terrain flag is redundant now that terrain is the default, but it must

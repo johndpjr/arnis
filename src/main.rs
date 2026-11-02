@@ -42,6 +42,7 @@ mod map_preview;
 mod map_renderer;
 mod map_transformation;
 mod mapillary;
+mod mineworld;
 mod mode_filter;
 mod models_3d;
 mod net;
@@ -187,6 +188,11 @@ fn run_cli() {
 
     // Validate arguments (path requirements differ between Java and Bedrock)
     if let Err(e) = args::validate_args(&args) {
+        eprintln!("{}: {}", "Error".red().bold(), e);
+        std::process::exit(1);
+    }
+
+    if let Err(e) = mineworld::init(&args) {
         eprintln!("{}: {}", "Error".red().bold(), e);
         std::process::exit(1);
     }

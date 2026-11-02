@@ -448,6 +448,12 @@ pub fn fetch_land_cover_data(
     grid_width: usize,
     grid_height: usize,
 ) -> Option<LandCoverData> {
+    // mineworld: a painted map (--landcover) replaces the download and the ESA clean-up passes.
+    if let Some(painted) =
+        crate::mineworld::land_cover::land_cover_for(bbox, grid_width, grid_height)
+    {
+        return Some(painted);
+    }
     println!("Fetching land cover data (ESA WorldCover 2021)...");
     emit_gui_progress_update(9.0, "Downloading data...");
 

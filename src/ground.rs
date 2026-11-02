@@ -786,6 +786,10 @@ impl Ground {
         xzbbox: &XZBBox,
         scale: f64,
     ) {
+        // mineworld: a painted map already agrees with OSM water; nothing to reconcile.
+        if crate::mineworld::land_cover::is_painted() {
+            return;
+        }
         let (world_width, world_height) = self.world_dims();
         let Some(lc) = self.land_cover.as_mut() else {
             return;
@@ -862,9 +866,8 @@ impl Ground {
     /// Local block bbox (min_x, min_z, max_x, max_z) covering all LC_WATER cells,
     /// derived from the land-cover grid; None if no land cover or no water.
     pub fn lc_water_block_bounds(&self) -> Option<(i32, i32, i32, i32)> {
-        let (lc, data) = match (&self.land_cover, &self.elevation_data) {
-            (Some(lc), Some(data)) => (lc, data),
-            _ => return None,
+        let Some(lc) = &self.land_cover else {
+            return None;
         };
         let (mut gx0, mut gz0, mut gx1, mut gz1) = (usize::MAX, usize::MAX, 0usize, 0usize);
         let mut any = false;
@@ -882,10 +885,10 @@ impl Ground {
         if !any {
             return None;
         }
-        let (x0, x1) =
-            crate::water_depth::grid_span_to_block_span(gx0, gx1, data.world_width, lc.width);
-        let (z0, z1) =
-            crate::water_depth::grid_span_to_block_span(gz0, gz1, data.world_height, lc.height);
+        // world_dims covers flat ground too (mineworld: flat worlds get water depth).
+        let (world_w, world_h) = self.world_dims();
+        let (x0, x1) = crate::water_depth::grid_span_to_block_span(gx0, gx1, world_w, lc.width);
+        let (z0, z1) = crate::water_depth::grid_span_to_block_span(gz0, gz1, world_h, lc.height);
         Some((x0, z0, x1, z1))
     }
 
