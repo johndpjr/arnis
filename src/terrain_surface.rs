@@ -576,7 +576,9 @@ impl SnowLine {
         let reach = ((lat.abs() - 10.0) / 15.0).clamp(0.0, 1.0) * lat.signum();
         Self {
             threshold_y: ground.snow_threshold_y(),
-            band_blocks: (Self::BAND_METRES * ground.blocks_per_meter()).max(4.0),
+            band_blocks: crate::mineworld::snow::band_blocks(
+                (Self::BAND_METRES * ground.blocks_per_meter()).max(4.0),
+            ),
             pole: (sin * reach, -cos * reach),
         }
     }

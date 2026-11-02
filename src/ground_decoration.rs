@@ -597,7 +597,11 @@ pub fn decorate_region(
     let snow_y = ground.snow_threshold_y();
     let alpine_from_y = match snow_y {
         i32::MAX | i32::MIN => snow_y,
-        t => t - (ALPINE_BAND_METRES * ground.blocks_per_meter()).round() as i32,
+        t => {
+            t - (crate::mineworld::snow::alpine_band_metres(ALPINE_BAND_METRES)
+                * ground.blocks_per_meter())
+            .round() as i32
+        }
     };
     let site = Site {
         ground,

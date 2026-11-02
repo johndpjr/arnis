@@ -6,6 +6,7 @@
 
 pub mod heightmap;
 pub mod land_cover;
+pub mod snow;
 
 use crate::args::Args;
 
@@ -16,6 +17,9 @@ pub fn init(args: &Args) -> Result<(), String> {
     }
     if let Some(path) = &args.heightmap {
         heightmap::load(path)?;
+    }
+    if let Some(y) = args.snow_line {
+        snow::set(y)?;
     }
     Ok(())
 }

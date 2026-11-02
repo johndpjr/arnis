@@ -33,6 +33,11 @@ pub struct Args {
     #[arg(long, value_name = "PNG")]
     pub heightmap: Option<PathBuf>,
 
+    /// Snow line at this Y instead of the climatic one, with snow and alpine bands sized for
+    /// mountains a few hundred blocks tall. Needs --heightmap. For invented worlds (mineworld).
+    #[arg(long, value_name = "Y", allow_hyphen_values = true)]
+    pub snow_line: Option<i32>,
+
     /// Save the OSM data this run uses to a file (Overpass JSON), to generate from it again
     /// later with --file
     #[arg(long, group = "location")]
@@ -938,6 +943,9 @@ pub fn validate_args(args: &Args) -> Result<(), String> {
         if args.one_world {
             return Err("--heightmap is not available with --one-world.".to_string());
         }
+    }
+    if args.snow_line.is_some() && args.heightmap.is_none() {
+        return Err("--snow-line needs --heightmap (its Y is a painted surface Y).".to_string());
     }
 
     // The legacy --terrain flag is redundant now that terrain is the default, but it must

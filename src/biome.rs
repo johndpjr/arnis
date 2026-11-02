@@ -111,7 +111,8 @@ fn mountain_biome(c: &Cell, climate: Climate) -> Option<&'static str> {
             _ => "minecraft:jagged_peaks",
         });
     }
-    if above_m < -crate::ground_decoration::ALPINE_BAND_METRES
+    if above_m
+        < -crate::mineworld::snow::alpine_band_metres(crate::ground_decoration::ALPINE_BAND_METRES)
         || matches!(climate, Climate::HotDesert | Climate::ColdDesert)
     {
         return None;

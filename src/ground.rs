@@ -558,7 +558,9 @@ impl Ground {
                     // Must use the base the scaler actually settled on: snow_threshold_for
                     // inverts that exact affine, so a mismatched base misplaces every snow cap.
                     let base = elevation_data.ground_level;
-                    let snow_threshold_y = if body.is_earth() {
+                    let snow_threshold_y = if let Some(y) = crate::mineworld::snow::line() {
+                        y
+                    } else if body.is_earth() {
                         snow_threshold_for(&elevation_data, lat, base)
                     } else {
                         i32::MAX
