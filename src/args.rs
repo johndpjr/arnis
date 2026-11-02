@@ -26,6 +26,13 @@ pub struct Args {
     #[arg(long, value_name = "PNG")]
     pub landcover: Option<PathBuf>,
 
+    /// Terrain from a painted height map instead of downloaded elevation: a 16-bit greyscale
+    /// PNG, one pixel per world block, each value the surface's Minecraft Y + 64 (as a
+    /// WorldPainter 1:1 export). Heights are used exactly. Needs a terrain mode. For invented
+    /// worlds (mineworld).
+    #[arg(long, value_name = "PNG")]
+    pub heightmap: Option<PathBuf>,
+
     /// Save the OSM data this run uses to a file (Overpass JSON), to generate from it again
     /// later with --file
     #[arg(long, group = "location")]
@@ -916,6 +923,20 @@ pub fn validate_args(args: &Args) -> Result<(), String> {
         }
         if !args.body.is_earth() {
             return Err("--landcover only applies to Earth.".to_string());
+        }
+    }
+    if let Some(path) = &args.heightmap {
+        if !path.is_file() {
+            return Err(format!("--heightmap: {} is not a file.", path.display()));
+        }
+        if !args.body.is_earth() || !args.terrain() {
+            return Err(
+                "--heightmap needs terrain: use it with --mode geo-terrain (the default)."
+                    .to_string(),
+            );
+        }
+        if args.one_world {
+            return Err("--heightmap is not available with --one-world.".to_string());
         }
     }
 

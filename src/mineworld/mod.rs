@@ -4,6 +4,7 @@
 //! upstream. The hooks into the rest of Arnis are kept to a line or two each, so upstream
 //! merges stay easy.
 
+pub mod heightmap;
 pub mod land_cover;
 
 use crate::args::Args;
@@ -12,6 +13,9 @@ use crate::args::Args;
 pub fn init(args: &Args) -> Result<(), String> {
     if let Some(path) = &args.landcover {
         land_cover::load(path)?;
+    }
+    if let Some(path) = &args.heightmap {
+        heightmap::load(path)?;
     }
     Ok(())
 }

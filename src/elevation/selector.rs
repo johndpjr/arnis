@@ -15,12 +15,14 @@ pub enum SourceMode {
     /// NASA PDS raster for a non-Earth body. No fallback: an Earth provider would
     /// return sea-level noise for these coordinates.
     Planetary(CelestialBody),
+    /// A painted height map (mineworld --heightmap). No fallback, and none of the Earth repairs.
+    Painted,
 }
 
 impl SourceMode {
     /// Whether the Earth fallback chain may be appended after the selection.
     pub fn allows_earth_fallback(self) -> bool {
-        !matches!(self, SourceMode::Planetary(_))
+        !matches!(self, SourceMode::Planetary(_) | SourceMode::Painted)
     }
 }
 
@@ -38,6 +40,7 @@ pub fn select_provider(_bbox: &LLBBox, mode: SourceMode) -> Box<dyn ElevationPro
             Box::new(AwsTerrain)
         }
         SourceMode::Planetary(body) => Box::new(PlanetaryDem { body }),
+        SourceMode::Painted => Box::new(crate::mineworld::heightmap::PaintedHeights),
         SourceMode::Auto => {
             println!("Using Mapterhorn terrain tiles (global; high-res where available)");
             Box::new(Mapterhorn)

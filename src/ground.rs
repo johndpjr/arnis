@@ -522,8 +522,12 @@ impl Ground {
                 }
             };
 
+            // mineworld: a painted height map, placed exactly (fixed one-block-per-metre mapping).
+            let painted_affine = crate::mineworld::heightmap::affine();
             let source_mode = if !body.is_earth() {
                 crate::elevation::SourceMode::Planetary(body)
+            } else if painted_affine.is_some() {
+                crate::elevation::SourceMode::Painted
             } else if aws_only_elevation {
                 crate::elevation::SourceMode::AwsOnly
             } else {
@@ -539,7 +543,10 @@ impl Ground {
                 source_mode,
                 benchmark,
                 (world_w, world_h, grid_w, grid_h),
-                frame.affine,
+                painted_affine.map_or(
+                    frame.affine,
+                    crate::elevation::postprocess::AffinePolicy::Fixed,
+                ),
                 peaks,
                 (frame.pad_blocks > 0).then_some(crate::elevation::Seam {
                     pad: plan.pad,
