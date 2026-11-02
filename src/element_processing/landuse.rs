@@ -141,7 +141,10 @@ fn landuse_area(
             element.tags.get("military").map(String::as_str),
             Some("training_area" | "range" | "danger_area" | "trench")
         );
-    let climate = editor.climate();
+    // The area's climate where it lies (painted climate varies per block).
+    let climate = floor_area
+        .first()
+        .map_or_else(|| editor.climate(), |&(x, z)| editor.climate_at(x, z));
     let site_arid = construction_site::is_arid(climate);
 
     let field_layout = (landuse_tag == "farmland")

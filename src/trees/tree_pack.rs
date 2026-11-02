@@ -104,6 +104,7 @@ pub fn load(
     let abs_lat = lat.abs();
     let unmapped_palms = ecoregions.is_none_or(EcoMap::has_gaps) && abs_lat <= 35.0;
     let exclude_palms = !unmapped_palms
+        && !crate::mineworld::climate::any_tropical()
         && !ids
             .iter()
             .filter_map(|&id| ecoregion::lookup(id))

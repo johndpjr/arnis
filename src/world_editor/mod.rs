@@ -1408,6 +1408,11 @@ impl<'a> WorldEditor<'a> {
         crate::climate::Climate::classify(&self.llbbox)
     }
 
+    /// Climate at a world block: the painted one (mineworld --climate), else the area's.
+    pub fn climate_at(&self, x: i32, z: i32) -> crate::climate::Climate {
+        crate::mineworld::climate::at(x, z, self.climate())
+    }
+
     /// Get the effective ground level at a world coordinate.
     ///
     /// Checks the road-surface override map first so that a later

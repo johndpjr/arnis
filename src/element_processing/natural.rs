@@ -215,9 +215,13 @@ fn natural_area(
                 ];
 
                 let mut wetland_puddles: Vec<(i32, i32)> = Vec::new();
+                // The area's climate where it lies (painted climate varies per block).
+                let area_climate = filled_area
+                    .first()
+                    .map_or_else(|| editor.climate(), |&(x, z)| editor.climate_at(x, z));
                 let arid = natural_type == "sand"
                     && matches!(
-                        editor.climate(),
+                        area_climate,
                         Climate::HotDesert
                             | Climate::HotSteppe
                             | Climate::ColdDesert
@@ -226,7 +230,7 @@ fn natural_area(
 
                 // Scrub and grassland in dry country keep the region's own ground, not a lawn.
                 let dry_ground = matches!(natural_type.as_str(), "scrub" | "grassland" | "heath")
-                    && editor.climate().is_dry();
+                    && area_climate.is_dry();
 
                 let bare_rock = matches!(natural_type.as_str(), "bare_rock" | "rock" | "stone");
                 let needs_rock = dry_ground || bare_rock || block_type == SAND;
@@ -244,7 +248,9 @@ fn natural_area(
                     }
                     // Per cell, so an area on the red earth border matches the ground beside it.
                     let rock = if needs_rock {
-                        Rock::at(editor.climate(), x, z, |sx, sz| editor.ecoregion(sx, sz))
+                        Rock::at(editor.climate_at(x, z), x, z, |sx, sz| {
+                            editor.ecoregion(sx, sz)
+                        })
                     } else {
                         Rock::Grey
                     };
@@ -771,7 +777,7 @@ fn beach_block(surface: Option<&String>) -> Block {
 
 /// Ground of an arid region under its scrub or grassland, from the land cover there.
 fn dry_ground_block(editor: &WorldEditor, x: i32, z: i32, rock: Rock) -> Option<Block> {
-    let climate = editor.climate();
+    let climate = editor.climate_at(x, z);
     let red = rock == Rock::Red;
     climate
         .surface_palette(editor.cover_class(x, z), x, z, red)

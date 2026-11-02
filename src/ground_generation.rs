@@ -328,7 +328,7 @@ pub fn generate_ground_region(
     // Share of forest-floor grass that grows as ferns, by the habitat the forest is in.
     // Undergrowth thins out with dryness: sparse in deserts, thinner on steppe,
     // full in savanna, temperate and boreal country.
-    let climate_sward = match climate {
+    let sward_of = |climate| match climate {
         crate::climate::Climate::HotDesert => 0.25,
         crate::climate::Climate::ColdDesert => 0.3,
         crate::climate::Climate::IceCap => 0.3,
@@ -339,11 +339,12 @@ pub fn generate_ground_region(
         crate::climate::Climate::Boreal => 0.9,
         crate::climate::Climate::Temperate | crate::climate::Climate::TropicalSavanna => 1.0,
     };
+    let world_climate = climate;
     // Read per chunk, as the ecoregion under the forest can change across the area.
     let fern_share_at = |x: i32, z: i32| match crate::ground_decoration::habitat(
         land_cover::LC_TREE_COVER,
-        climate,
-        center_lat.abs(),
+        crate::mineworld::climate::at(x, z, world_climate),
+        crate::mineworld::climate::abs_lat(x, z, center_lat.abs()),
         false,
         ground.ecoregion(XZPoint::new(x - xzbbox.min_x(), z - xzbbox.min_z())),
     ) {
@@ -448,6 +449,9 @@ pub fn generate_ground_region(
 
             for x in chunk_min_x..=chunk_max_x {
                 for z in chunk_min_z..=chunk_max_z {
+                    // The column's climate (painted climate varies per block).
+                    let climate = crate::mineworld::climate::at(x, z, world_climate);
+                    let climate_sward = sward_of(climate);
                     // Skip blocks outside the rotated original bounding box
                     if !ground.is_in_rotated_bounds(x, z) {
                         block_counter += 1;

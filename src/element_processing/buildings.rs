@@ -12651,7 +12651,16 @@ pub fn generate_buildings(
     // Resolve style with deterministic RNG
     let mut rng = element_rng(group_seed);
     let has_multiple_floors = building_height > floor_cycle + 2;
-    let climate = editor.climate();
+    // The climate at the building (painted climate varies per block).
+    let climate = match element.nodes.len() {
+        0 => editor.climate(),
+        n => {
+            let (sx, sz) = element.nodes.iter().fold((0i64, 0i64), |(a, b), p| {
+                (a + i64::from(p.x), b + i64::from(p.z))
+            });
+            editor.climate_at((sx / n as i64) as i32, (sz / n as i64) as i32)
+        }
+    };
     let roof_ctx = {
         let (lat, lon) = editor.geo_anchor();
         let (mut party, mut total) = (0, 0);

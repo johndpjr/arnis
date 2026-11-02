@@ -4,6 +4,7 @@
 //! upstream. The hooks into the rest of Arnis are kept to a line or two each, so upstream
 //! merges stay easy.
 
+pub mod climate;
 pub mod heightmap;
 pub mod land_cover;
 pub mod snow;
@@ -17,6 +18,9 @@ pub fn init(args: &Args) -> Result<(), String> {
     }
     if let Some(path) = &args.heightmap {
         heightmap::load(path)?;
+    }
+    if let Some(path) = &args.climate {
+        climate::load(path)?;
     }
     if let Some(y) = args.snow_line {
         snow::set(y)?;

@@ -33,6 +33,13 @@ pub struct Args {
     #[arg(long, value_name = "PNG")]
     pub heightmap: Option<PathBuf>,
 
+    /// Climate per block from a painted map instead of one for the whole area: an 8-bit
+    /// greyscale PNG, one pixel per world block, each value a climate code (0 the area's own,
+    /// 1 temperate, 2 tropical, 3 savanna, 4 hot desert, 5 hot steppe, 6 cold desert, 7 cold
+    /// steppe, 8 boreal, 9 tundra, 10 ice cap). For invented worlds (mineworld).
+    #[arg(long, value_name = "PNG")]
+    pub climate: Option<PathBuf>,
+
     /// Snow line at this Y instead of the climatic one, with snow and alpine bands sized for
     /// mountains a few hundred blocks tall. Needs --heightmap. For invented worlds (mineworld).
     #[arg(long, value_name = "Y", allow_hyphen_values = true)]
@@ -942,6 +949,14 @@ pub fn validate_args(args: &Args) -> Result<(), String> {
         }
         if args.one_world {
             return Err("--heightmap is not available with --one-world.".to_string());
+        }
+    }
+    if let Some(path) = &args.climate {
+        if !path.is_file() {
+            return Err(format!("--climate: {} is not a file.", path.display()));
+        }
+        if !args.body.is_earth() {
+            return Err("--climate only applies to Earth.".to_string());
         }
     }
     if args.snow_line.is_some() && args.heightmap.is_none() {

@@ -267,7 +267,7 @@ pub fn chunk_biome_names(
             // One barren biome for the whole world; no land cover to classify.
             names = [g.body().biome(); 16];
         } else {
-            let climate = g.climate();
+            let world_climate = g.climate();
             let snow_y = if g.elevation_enabled {
                 g.snow_threshold_y()
             } else {
@@ -278,6 +278,7 @@ pub fn chunk_biome_names(
                 for xi in 0..4i32 {
                     let world_x = chunk_x * 16 + xi * 4 + 2;
                     let world_z = chunk_z * 16 + zi * 4 + 2;
+                    let climate = crate::mineworld::climate::at(world_x, world_z, world_climate);
                     let coord = XZPoint::new(world_x - ground_origin.0, world_z - ground_origin.1);
                     // Read where the ground reads red earth, so badlands sit on it.
                     let eco_at = if climate.is_dry() {
@@ -287,7 +288,9 @@ pub fn chunk_biome_names(
                         coord
                     };
                     let cell = classify_input(g, coord, eco_at, snow_y, sea_max_y);
-                    let name = cell_biome(&cell, climate, center_lat_deg);
+                    let lat =
+                        crate::mineworld::climate::abs_lat(world_x, world_z, center_lat_deg.abs());
+                    let name = cell_biome(&cell, climate, lat);
                     names[(zi * 4 + xi) as usize] =
                         if g.winter() { winter_biome(name) } else { name };
                 }

@@ -1183,7 +1183,7 @@ impl RegionLibrary {
             self.is_montane(elev_y) && crate::ground_generation::value_noise_01(sx, sz, 64) < 0.6;
         let blend = coord_hash(sx + 7, sz + 13) % 100;
         let mix = req.eco.and_then(|e| self.mixes.get(&e.id));
-        let no_palms = !self.palms_at(mix);
+        let no_palms = !self.palms_at(mix) && !crate::mineworld::climate::palms(sx, sz);
         let height = self.capped_height(
             req.want_height
                 .unwrap_or_else(|| self.default_height(sx, sz)),

@@ -745,7 +745,8 @@ impl Tree {
                     WATER,
                 ]
             };
-            let hint = habitat_for_tree_type(tree_type);
+            let hint = crate::mineworld::climate::habitat(x, z)
+                .unwrap_or_else(|| habitat_for_tree_type(tree_type));
             let elev_y = editor.terrain_level(x, z).unwrap_or(base_y);
             let picked = match mapped {
                 Some(m) => {

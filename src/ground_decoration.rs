@@ -560,8 +560,8 @@ impl Site<'_> {
         };
         habitat(
             self.cover(x, z),
-            self.climate,
-            self.abs_lat,
+            crate::mineworld::climate::at(x, z, self.climate),
+            crate::mineworld::climate::abs_lat(x, z, self.abs_lat),
             terrain_y >= self.alpine_from_y,
             self.ecoregion(x, z),
         )
