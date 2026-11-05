@@ -150,6 +150,12 @@ fn exit_failed() -> ! {
 }
 
 fn run_cli() {
+    // mineworld --offline: before any thread starts, as it sets process-wide proxy variables.
+    let offline = mineworld::offline::requested();
+    if offline {
+        mineworld::offline::arm_network_guard();
+    }
+
     // Configure thread pool with 90% CPU cap to keep system responsive
     floodfill_cache::configure_rayon_thread_pool(0.9);
 
@@ -178,13 +184,16 @@ fn run_cli() {
     );
 
     // Fire-and-forget update check; prints a one-line notice on a background thread.
-    version_check::check_for_updates_async();
+    if !offline {
+        version_check::check_for_updates_async();
+    }
 
     // Parse input arguments
     let mut args: Args = Args::parse();
     let asked_mob_spawning = args.mob_spawning;
     args::apply_body_defaults(&mut args);
     args::apply_feature_needs(&mut args);
+    mineworld::offline::apply(&mut args);
 
     // Validate arguments (path requirements differ between Java and Bedrock)
     if let Err(e) = args::validate_args(&args) {

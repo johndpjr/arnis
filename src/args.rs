@@ -40,6 +40,12 @@ pub struct Args {
     #[arg(long, value_name = "PNG")]
     pub climate: Option<PathBuf>,
 
+    /// Never touch the network: no update check, no Mapillary, and every HTTP client pointed
+    /// at a dead local proxy as a safety net. For invented worlds that bring all their data
+    /// (mineworld).
+    #[arg(long)]
+    pub offline: bool,
+
     /// Snow line at this Y instead of the climatic one, with snow and alpine bands sized for
     /// mountains a few hundred blocks tall. Needs --heightmap. For invented worlds (mineworld).
     #[arg(long, value_name = "Y", allow_hyphen_values = true)]
