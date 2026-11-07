@@ -94,9 +94,16 @@ mod progress {
     /// Mirrors the real module's constant so callers outside the GUI feature
     /// still compile; nothing here reads it, the emits below do nothing.
     pub const MESSAGE_ONLY: f64 = -1.0;
-    pub fn emit_gui_error(_message: &str) {}
-    pub fn emit_gui_progress_update(_progress: f64, _message: &str) {}
-    pub fn emit_gui_progress_update_ex(_progress: f64, _message: &str, _streaming: bool) {}
+    // mineworld: printed as progress lines when a front end asks (MINEWORLD_PROGRESS=1).
+    pub fn emit_gui_error(message: &str) {
+        crate::mineworld::progress::emit(MESSAGE_ONLY, &format!("Error! {message}"));
+    }
+    pub fn emit_gui_progress_update(progress: f64, message: &str) {
+        crate::mineworld::progress::emit(progress, message);
+    }
+    pub fn emit_gui_progress_update_ex(progress: f64, message: &str, _streaming: bool) {
+        crate::mineworld::progress::emit(progress, message);
+    }
     pub fn emit_map_preview_ready() {}
     pub fn emit_show_in_folder(_path: &str) {}
     pub fn is_running_with_gui() -> bool {

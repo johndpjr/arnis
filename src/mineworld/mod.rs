@@ -8,6 +8,7 @@ pub mod climate;
 pub mod heightmap;
 pub mod land_cover;
 pub mod offline;
+pub mod progress;
 pub mod snow;
 
 use crate::args::Args;
