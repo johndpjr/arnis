@@ -4,6 +4,9 @@
 //! nothing should be downloaded. With the flag:
 //! - the startup update check (GitHub releases API) is skipped;
 //! - the Mapillary facade pipeline stays off whatever MAPILLARY_TOKEN says;
+//! - live mode (`--live`, and the `--live-tile` runs it starts) is refused: it downloads a
+//!   Minecraft server, a Java runtime and real-world map data by design, so no guard could make
+//!   it work offline, and failing at the start says why instead of failing at the first fetch;
 //! - as a safety net for any download path not covered above (3D models from tags, a future
 //!   upstream fetch), every HTTP client, including curl or wget child processes, is pointed at a
 //!   dead local proxy, so a request fails at once instead of reaching the network.
@@ -49,14 +52,21 @@ pub fn arm_network_guard() {
     }
 }
 
-/// Turns off the features that download by default or from the environment.
-pub fn apply(args: &mut Args) {
+/// Turns off the features that download by default or from the environment, and refuses the
+/// ones that cannot work without the network.
+pub fn apply(args: &mut Args) -> Result<(), String> {
     if !args.offline {
-        return;
+        return Ok(());
+    }
+    if args.live.live || args.live.tile {
+        return Err("--live cannot run with --offline: live mode downloads a Minecraft server, \
+                    a Java runtime and map data while you play."
+            .to_string());
     }
     args.mapillary_token = None;
     args.mapillary_facades = Some(false);
     args.mapillary_probe = false;
+    Ok(())
 }
 
 #[cfg(test)]
@@ -77,5 +87,30 @@ mod tests {
             !requested_in(argv(&["--offline"])),
             "argv[0] is the program"
         );
+    }
+
+    fn parsed(extra: &[&str]) -> Args {
+        use clap::Parser;
+        let mut cmd = vec!["arnis", "--output-dir", ".", "--bbox", "-1,-1,1,1"];
+        cmd.extend_from_slice(extra);
+        Args::parse_from(cmd)
+    }
+
+    #[test]
+    fn live_mode_is_refused_offline() {
+        let mut live = parsed(&["--offline", "--one-world", "--live"]);
+        assert!(apply(&mut live).unwrap_err().contains("--live"));
+        let mut tile = parsed(&["--offline", "--live-tile"]);
+        assert!(apply(&mut tile).is_err());
+        let mut online = parsed(&["--one-world", "--live"]);
+        assert!(apply(&mut online).is_ok(), "only offline runs refuse it");
+    }
+
+    #[test]
+    fn offline_turns_mapillary_off() {
+        let mut args = parsed(&["--offline"]);
+        apply(&mut args).unwrap();
+        assert!(args.mapillary_token.is_none());
+        assert_eq!(args.mapillary_facades, Some(false));
     }
 }
