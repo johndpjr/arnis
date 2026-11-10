@@ -62,7 +62,10 @@ mod tests {
 
     #[test]
     fn lines_carry_a_percentage_or_a_dash() {
-        assert_eq!(line(42.04, "Generating area..."), "@progress 42.0 Generating area...");
+        assert_eq!(
+            line(42.04, "Generating area..."),
+            "@progress 42.0 Generating area..."
+        );
         assert_eq!(line(120.0, ""), "@progress 100.0");
         assert_eq!(line(MESSAGE_ONLY, "a\nb"), "@progress - a b");
     }

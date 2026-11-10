@@ -288,6 +288,7 @@ pub fn chunk_biome_names(
                         coord
                     };
                     let cell = classify_input(g, coord, eco_at, snow_y, sea_max_y);
+                    let cell = crate::mineworld::rivers::cell(cell, world_x, world_z);
                     let lat =
                         crate::mineworld::climate::abs_lat(world_x, world_z, center_lat_deg.abs());
                     let name = cell_biome(&cell, climate, lat);

@@ -59,9 +59,11 @@ pub fn apply(args: &mut Args) -> Result<(), String> {
         return Ok(());
     }
     if args.live.live || args.live.tile {
-        return Err("--live cannot run with --offline: live mode downloads a Minecraft server, \
+        return Err(
+            "--live cannot run with --offline: live mode downloads a Minecraft server, \
                     a Java runtime and map data while you play."
-            .to_string());
+                .to_string(),
+        );
     }
     args.mapillary_token = None;
     args.mapillary_facades = Some(false);

@@ -72,6 +72,15 @@ pub fn affine() -> Option<ElevationAffine> {
     })
 }
 
+/// The painted surface Y at a world block, if a height map is loaded and covers it.
+pub fn y_at(x: i32, z: i32) -> Option<i32> {
+    let p = PAINTED.get()?;
+    if x < 0 || z < 0 || x as usize >= p.width || z as usize >= p.height {
+        return None;
+    }
+    Some(p.y[z as usize * p.width + x as usize])
+}
+
 /// The painted heights as an elevation source.
 pub struct PaintedHeights;
 

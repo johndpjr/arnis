@@ -9,6 +9,7 @@ pub mod heightmap;
 pub mod land_cover;
 pub mod offline;
 pub mod progress;
+pub mod rivers;
 pub mod snow;
 
 use crate::args::Args;
@@ -23,6 +24,9 @@ pub fn init(args: &Args) -> Result<(), String> {
     }
     if let Some(path) = &args.climate {
         climate::load(path)?;
+    }
+    if let Some(path) = &args.rivers {
+        rivers::load(path)?;
     }
     if let Some(y) = args.snow_line {
         snow::set(y)?;

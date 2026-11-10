@@ -40,6 +40,13 @@ pub struct Args {
     #[arg(long, value_name = "PNG")]
     pub climate: Option<PathBuf>,
 
+    /// Rivers planned by the front end: a 16-bit greyscale PNG, one pixel per world block, each
+    /// value the river's water surface Y + 64 (0 = no river). The bed is the height map's Y
+    /// there; water fills from it to the surface. Needs --heightmap. For invented worlds
+    /// (mineworld).
+    #[arg(long, value_name = "PNG")]
+    pub rivers: Option<PathBuf>,
+
     /// Never touch the network: no update check, no Mapillary, and every HTTP client pointed
     /// at a dead local proxy as a safety net. For invented worlds that bring all their data
     /// (mineworld).
@@ -1012,6 +1019,16 @@ pub fn validate_args(args: &Args) -> Result<(), String> {
         }
         if !args.body.is_earth() {
             return Err("--climate only applies to Earth.".to_string());
+        }
+    }
+    if let Some(path) = &args.rivers {
+        if !path.is_file() {
+            return Err(format!("--rivers: {} is not a file.", path.display()));
+        }
+        if args.heightmap.is_none() {
+            return Err(
+                "--rivers needs --heightmap (the river beds are carved into it).".to_string(),
+            );
         }
     }
     if args.snow_line.is_some() && args.heightmap.is_none() {
