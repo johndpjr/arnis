@@ -653,6 +653,9 @@ impl Tree {
                 return;
             }
         }
+        if crate::mineworld::trees::too_close(editor, building_footprints, x, z) {
+            return;
+        }
 
         // A request from a tile's halo is the owning tile's to make: the halo copy
         // runs its own random sequence and would stack a different tree on the
@@ -798,6 +801,7 @@ impl Tree {
                 if editor.is_lc_water(sx, sz)
                     || editor.in_clear_corridor(sx, sz)
                     || building_footprints.is_some_and(|f| f.contains(sx, sz))
+                    || crate::mineworld::trees::too_close(editor, building_footprints, sx, sz)
                     || editor.check_for_block(sx, 0, sz, Some(road_water))
                     || bridge_surface.is_some_and(|b| b.contains(sx, sz))
                     || (!allow_on_paved && editor.surface_is_sealed(sx, sz))
@@ -836,19 +840,32 @@ impl Tree {
                 if trunk_taken || !editor.claim_tree_slot(sx, sz) {
                     return;
                 }
-                crate::trees::schematic::place_schematic_tree(
+                // mineworld --tree-clearance: a big tree whose trunk base would crowd a building
+                // or road gives way to the small tree below (its one trunk column was checked).
+                if !crate::mineworld::trees::schematic_too_close(
                     editor,
                     schem,
                     sx,
                     sz,
-                    slot_base_y,
                     rot,
-                    &blacklist,
                     building_footprints,
-                    y,
-                );
+                ) {
+                    crate::trees::schematic::place_schematic_tree(
+                        editor,
+                        schem,
+                        sx,
+                        sz,
+                        slot_base_y,
+                        rot,
+                        &blacklist,
+                        building_footprints,
+                        y,
+                    );
+                    return;
+                }
+            } else {
+                return;
             }
-            return;
         }
 
         // Trunk jitter clamped so the canopy cap always sits above the trunk top.

@@ -11,6 +11,7 @@ pub mod offline;
 pub mod progress;
 pub mod rivers;
 pub mod snow;
+pub mod trees;
 
 use crate::args::Args;
 
@@ -27,6 +28,9 @@ pub fn init(args: &Args) -> Result<(), String> {
     }
     if let Some(path) = &args.rivers {
         rivers::load(path)?;
+    }
+    if let Some(blocks) = args.tree_clearance {
+        trees::set(blocks)?;
     }
     if let Some(y) = args.snow_line {
         snow::set(y)?;

@@ -47,6 +47,11 @@ pub struct Args {
     #[arg(long, value_name = "PNG")]
     pub rivers: Option<PathBuf>,
 
+    /// Trees keep this many free blocks between themselves and buildings and roads, and never
+    /// stand on a building's walls or fill its rooms with leaves. For invented worlds (mineworld).
+    #[arg(long, value_name = "BLOCKS")]
+    pub tree_clearance: Option<i32>,
+
     /// Never touch the network: no update check, no Mapillary, and every HTTP client pointed
     /// at a dead local proxy as a safety net. For invented worlds that bring all their data
     /// (mineworld).

@@ -1114,7 +1114,8 @@ pub fn generate_world_with_options(
 
     // Collect building footprints to prevent trees from spawning inside buildings
     // Uses a memory-efficient bitmap (~1 bit per coordinate) instead of a HashSet (~24 bytes per coordinate)
-    let building_footprints = flood_fill_cache.collect_building_footprints(&elements, &xzbbox);
+    let mut building_footprints = flood_fill_cache.collect_building_footprints(&elements, &xzbbox);
+    crate::mineworld::trees::add_outlines(&mut building_footprints, &elements);
 
     // Tenants and surrounding areas per building, for interiors furnished by use.
     let interior_uses = if args.interior {

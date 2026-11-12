@@ -218,7 +218,10 @@ fn species_at(editor: &WorldEditor, x: i32, z: i32, kind: BushKind) -> Block {
 
 /// True if a bush may spread a leaf onto the cell beside its root.
 fn can_spread(editor: &WorldEditor, x: i32, z: i32) -> bool {
-    if editor.surface_is_sealed(x, z) || editor.is_lc_water(x, z) {
+    if editor.surface_is_sealed(x, z)
+        || editor.is_lc_water(x, z)
+        || crate::mineworld::trees::in_building(x, z)
+    {
         return false;
     }
     let ground_y = editor.get_absolute_y(x, 0, z);
@@ -231,6 +234,9 @@ fn can_spread(editor: &WorldEditor, x: i32, z: i32) -> bool {
 /// Grows a bush rooted on the ground at (x, z). The caller has checked the root cell;
 /// leaves only spread onto open soil beside it and never replace a block.
 pub fn place_bush(editor: &mut WorldEditor, x: i32, z: i32, kind: BushKind) {
+    if crate::mineworld::trees::in_building(x, z) {
+        return;
+    }
     if editor.block_exists_absolute(x, editor.get_absolute_y(x, 1, z), z) {
         return;
     }
