@@ -1722,6 +1722,13 @@ pub fn generate_world_with_options(
                 g_max_z,
             );
             highways::drop_lamps_in_water(&mut tile_editor);
+            crate::mineworld::rivers::fill_area(
+                &mut tile_editor,
+                g_min_x,
+                g_max_x,
+                g_min_z,
+                g_max_z,
+            );
 
             // Under eviction the post-merge rail-tunnel carve can't run (regions get freed),
             // so carve in-tile now, after ground/fill so the interior isn't refilled.
@@ -2157,7 +2164,7 @@ pub fn generate_world_with_options(
         );
         highways::drop_lamps_in_water(&mut editor);
     }
-    crate::mineworld::rivers::fill(&mut editor);
+    crate::mineworld::rivers::fill_merged(&mut editor, ground_on_merged);
 
     // Free everything the save phase doesn't need; it often sits at the process peak.
     // The editor holds its own handle on the sealed-surface mask, and that mask is the

@@ -17,12 +17,17 @@
 //!   and where a lake's shore pull-down lowered the ground near its mouth the river is deeper;
 //! - a 4 x 4 biome cell holding river blocks takes the river biome (frozen where it would be
 //!   cold), like Arnis's lakes and rivers.
+//!
+//! A world big enough to be built in tiles is filled tile by tile (`fill_area`, right after each
+//! tile's own water pass): such a world streams each region to disk as soon as its tiles have
+//! merged, so a pass over the merged world would write water into regions already saved.
 
 use crate::biome::Cell;
 use crate::block_definitions::{Block, AIR, CLAY, GRAVEL, SAND, SNOW_LAYERS, WATER};
 use crate::land_cover::LC_WATER;
 use crate::world_editor::WorldEditor;
 use std::path::Path;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::OnceLock;
 
 /// Pixel value of Y 0, as in the height map.
@@ -97,15 +102,47 @@ fn bed_block(x: i32, z: i32) -> Block {
     }
 }
 
-/// Puts the water in. Call once the ground is built.
+/// River blocks filled so far, across tiles (reported once, after the merge).
+static FILLED: AtomicUsize = AtomicUsize::new(0);
+
+/// Fills the rivers in the whole world, on an editor that holds all of it (the single-pass path).
 pub fn fill(editor: &mut WorldEditor) {
+    let Some(p) = PAINTED.get() else {
+        return;
+    };
+    fill_area(editor, 0, p.width as i32 - 1, 0, p.height as i32 - 1);
+    report();
+}
+
+/// After the merge: fills the whole world when the ground was built on the merged editor;
+/// otherwise each tile filled its own area (`fill_area`) before its regions could be written to
+/// disk, and only the total is reported. Filling after the merge would miss every region a big
+/// world has already streamed out.
+pub fn fill_merged(editor: &mut WorldEditor, ground_on_merged: bool) {
+    if ground_on_merged {
+        fill(editor);
+    } else {
+        report();
+    }
+}
+
+fn report() {
+    let blocks = FILLED.swap(0, Ordering::Relaxed);
+    if blocks > 0 {
+        println!("Rivers: filled {blocks} blocks of river");
+    }
+}
+
+/// Fills the river blocks in x min_x..=max_x, z min_z..=max_z (a tile's own area, after its
+/// ground and water passes).
+pub fn fill_area(editor: &mut WorldEditor, min_x: i32, max_x: i32, min_z: i32, max_z: i32) {
     let Some(p) = PAINTED.get() else {
         return;
     };
     let replace_any: Option<&[Block]> = Some(&[]);
     let mut blocks = 0usize;
-    for z in 0..p.height as i32 {
-        for x in 0..p.width as i32 {
+    for z in min_z.max(0)..=max_z.min(p.height as i32 - 1) {
+        for x in min_x.max(0)..=max_x.min(p.width as i32 - 1) {
             let Some(top) = surface_in(p, x, z) else {
                 continue;
             };
@@ -130,9 +167,7 @@ pub fn fill(editor: &mut WorldEditor) {
             blocks += 1;
         }
     }
-    if blocks > 0 {
-        println!("Rivers: filled {blocks} blocks of river");
-    }
+    FILLED.fetch_add(blocks, Ordering::Relaxed);
 }
 
 /// Plants and snow that would float on or stand in the water.
