@@ -47,6 +47,12 @@ pub struct Args {
     #[arg(long, value_name = "PNG")]
     pub rivers: Option<PathBuf>,
 
+    /// Mobs to place: a JSON list of { id, kind, x, z, name?, profession?, look? } in world
+    /// blocks, each written as a persistent entity on the floor where it stands. For invented
+    /// worlds (mineworld).
+    #[arg(long, value_name = "JSON")]
+    pub npcs: Option<PathBuf>,
+
     /// Trees keep this many free blocks between themselves and buildings and roads, and never
     /// stand on a building's walls or fill its rooms with leaves. For invented worlds (mineworld).
     #[arg(long, value_name = "BLOCKS")]
@@ -1035,6 +1041,9 @@ pub fn validate_args(args: &Args) -> Result<(), String> {
                 "--rivers needs --heightmap (the river beds are carved into it).".to_string(),
             );
         }
+    }
+    if let Some(path) = args.npcs.as_ref().filter(|p| !p.is_file()) {
+        return Err(format!("--npcs: {} is not a file.", path.display()));
     }
     if args.snow_line.is_some() && args.heightmap.is_none() {
         return Err("--snow-line needs --heightmap (its Y is a painted surface Y).".to_string());

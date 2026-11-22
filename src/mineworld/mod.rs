@@ -7,6 +7,7 @@
 pub mod climate;
 pub mod heightmap;
 pub mod land_cover;
+pub mod npcs;
 pub mod offline;
 pub mod progress;
 pub mod rivers;
@@ -28,6 +29,9 @@ pub fn init(args: &Args) -> Result<(), String> {
     }
     if let Some(path) = &args.rivers {
         rivers::load(path)?;
+    }
+    if let Some(path) = &args.npcs {
+        npcs::load(path)?;
     }
     if let Some(blocks) = args.tree_clearance {
         trees::set(blocks)?;
